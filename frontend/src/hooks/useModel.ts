@@ -16,7 +16,10 @@ const SYDNEY_REGION_MODELS = [
   'claude-v3.7-sonnet',
   'mistral-large',
   'mistral-large-2',
-];
+] as const;
+
+// Type to ensure Sydney models are a subset of all available models
+type SydneyModel = typeof SYDNEY_REGION_MODELS[number];
 
 const CLAUDE_SUPPORTED_MEDIA_TYPES = [
   'image/jpeg',
@@ -73,8 +76,9 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
 
     // Create a new object with all models set to true
     return AVAILABLE_MODEL_KEYS.reduce((acc: ActiveModels, model: Model) => {
-      // Optimize string replacement by doing it in one operation
-      acc[toCamelCase(model) as keyof ActiveModels] = true;
+      // Only set Sydney region models to true
+      acc[toCamelCase(model) as keyof ActiveModels] = 
+        SYDNEY_REGION_MODELS.includes(model as any);
       return acc;
     }, {} as ActiveModels);
   }, [activeModels]);
@@ -92,65 +96,66 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
       description?: string;
     }[]
   >(() => {
-    return [
+    // Define all models
+    const allModels = [
       {
-        modelId: 'claude-v4-opus',
+        modelId: 'claude-v4-opus' as Model,
         label: t('model.claude-v4-opus.label'),
         description: t('model.claude-v4-opus.description'),
         supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
         supportReasoning: true,
       },
       {
-        modelId: 'claude-v4-sonnet',
+        modelId: 'claude-v4-sonnet' as Model,
         label: t('model.claude-v4-sonnet.label'),
         description: t('model.claude-v4-sonnet.description'),
         supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
         supportReasoning: true,
       },
       {
-        modelId: 'claude-v3-haiku',
+        modelId: 'claude-v3-haiku' as Model,
         label: t('model.claude-v3-haiku.label'),
         description: t('model.claude-v3-haiku.description'),
         supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
         supportReasoning: false,
       },
       {
-        modelId: 'claude-v3.5-haiku',
+        modelId: 'claude-v3.5-haiku' as Model,
         label: t('model.claude-v3.5-haiku.label'),
         description: t('model.claude-v3.5-haiku.description'),
         supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
         supportReasoning: false,
       },
       {
-        modelId: 'claude-v3.5-sonnet',
+        modelId: 'claude-v3.5-sonnet' as Model,
         label: t('model.claude-v3.5-sonnet.label'),
         description: t('model.claude-v3.5-sonnet.description'),
         supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
         supportReasoning: false,
       },
       {
-        modelId: 'claude-v3.5-sonnet-v2',
+        modelId: 'claude-v3.5-sonnet-v2' as Model,
         label: t('model.claude-v3.5-sonnet-v2.label'),
         description: t('model.claude-v3.5-sonnet-v2.description'),
         supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
         supportReasoning: false,
       },
       {
-        modelId: 'claude-v3.7-sonnet',
+        modelId: 'claude-v3.7-sonnet' as Model,
         label: t('model.claude-v3.7-sonnet.label'),
         description: t('model.claude-v3.7-sonnet.description'),
         supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
         supportReasoning: true,
       },
       {
-        modelId: 'claude-v3-opus',
+        modelId: 'claude-v3-opus' as Model,
         label: t('model.claude-v3-opus.label'),
         description: t('model.claude-v3-opus.description'),
         supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
         supportReasoning: false,
       },
       {
-        modelId: 'claude-v3-sonnet',
+        modelId: 'claude-v3-sonnet' as Model,
         label: t('model.claude-v3-sonnet.label'),
         description: t('model.claude-v3-sonnet.description'),
         supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
@@ -158,21 +163,21 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
       },
       // New Amazon Nova models
       {
-        modelId: 'amazon-nova-pro',
+        modelId: 'amazon-nova-pro' as Model,
         label: t('model.amazon-nova-pro.label'),
         description: t('model.amazon-nova-pro.description'),
         supportMediaType: NOVA_SUPPORTED_MEDIA_TYPES,
         supportReasoning: false,
       },
       {
-        modelId: 'amazon-nova-lite',
+        modelId: 'amazon-nova-lite' as Model,
         label: t('model.amazon-nova-lite.label'),
         description: t('model.amazon-nova-lite.description'),
         supportMediaType: NOVA_SUPPORTED_MEDIA_TYPES,
         supportReasoning: false,
       },
       {
-        modelId: 'amazon-nova-micro',
+        modelId: 'amazon-nova-micro' as Model,
         label: t('model.amazon-nova-micro.label'),
         description: t('model.amazon-nova-micro.description'),
         supportMediaType: [],
@@ -180,7 +185,7 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
       },
       // DeepSeek models
       {
-        modelId: 'deepseek-r1',
+        modelId: 'deepseek-r1' as Model,
         label: t('model.deepseek-r1.label'),
         description: t('model.deepseek-r1.description'),
         supportMediaType: [],
@@ -189,35 +194,35 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
       },
       // Meta Llama 3 models
       {
-        modelId: 'llama3-3-70b-instruct',
+        modelId: 'llama3-3-70b-instruct' as Model,
         label: t('model.llama3-3-70b-instruct.label'),
         description: t('model.llama3-3-70b-instruct.description'),
         supportMediaType: [],
         supportReasoning: false,
       },
       {
-        modelId: 'llama3-2-1b-instruct',
+        modelId: 'llama3-2-1b-instruct' as Model,
         label: t('model.llama3-2-1b-instruct.label'),
         description: t('model.llama3-2-1b-instruct.description'),
         supportMediaType: [],
         supportReasoning: false,
       },
       {
-        modelId: 'llama3-2-3b-instruct',
+        modelId: 'llama3-2-3b-instruct' as Model,
         label: t('model.llama3-2-3b-instruct.label'),
         description: t('model.llama3-2-3b-instruct.description'),
         supportMediaType: [],
         supportReasoning: false,
       },
       {
-        modelId: 'llama3-2-11b-instruct',
+        modelId: 'llama3-2-11b-instruct' as Model,
         label: t('model.llama3-2-11b-instruct.label'),
         description: t('model.llama3-2-11b-instruct.description'),
         supportMediaType: LLAMA_SUPPORTED_MEDIA_TYPES,
         supportReasoning: false,
       },
       {
-        modelId: 'llama3-2-90b-instruct',
+        modelId: 'llama3-2-90b-instruct' as Model,
         label: t('model.llama3-2-90b-instruct.label'),
         description: t('model.llama3-2-90b-instruct.description'),
         supportMediaType: LLAMA_SUPPORTED_MEDIA_TYPES,
@@ -225,34 +230,39 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
       },
       // Mistral
       {
-        modelId: 'mistral-7b-instruct',
+        modelId: 'mistral-7b-instruct' as Model,
         label: t('model.mistral-7b-instruct.label'),
         description: t('model.mistral-7b-instruct.description'),
         supportMediaType: [],
         supportReasoning: false,
       },
       {
-        modelId: 'mixtral-8x7b-instruct',
+        modelId: 'mixtral-8x7b-instruct' as Model,
         label: t('model.mixtral-8x7b-instruct.label'),
         description: t('model.mixtral-8x7b-instruct.description'),
         supportMediaType: [],
         supportReasoning: false,
       },
       {
-        modelId: 'mistral-large',
+        modelId: 'mistral-large' as Model,
         label: t('model.mistral-large.label'),
         description: t('model.mistral-large.description'),
         supportMediaType: [],
         supportReasoning: false,
       },
       {
-        modelId: 'mistral-large-2',
+        modelId: 'mistral-large-2' as Model,
         label: t('model.mistral-large-2.label'),
         description: t('model.mistral-large-2.description'),
         supportMediaType: [],
         supportReasoning: false,
       },
-    ].filter(model => SYDNEY_REGION_MODELS.includes(model.modelId));
+    ];
+    
+    // Filter to only include models available in Sydney region
+    return allModels.filter(model => 
+      SYDNEY_REGION_MODELS.includes(model.modelId as any)
+    );
   }, [t]);
 
   const [filteredModels, setFilteredModels] = useState(availableModels);

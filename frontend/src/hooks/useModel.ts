@@ -14,10 +14,6 @@ const SYDNEY_REGION_MODELS = [
   'claude-v3.5-sonnet',
   'claude-v3.5-sonnet-v2',
   'claude-v3.7-sonnet',
-  'amazon-titan-text-express-v1',
-  'amazon-titan-text-lite-v1',
-  'amazon-titan-embed-text-v1',
-  'amazon-titan-embed-image-v1',
   'mistral-large',
   'mistral-large-2',
 ];
@@ -43,7 +39,7 @@ const LLAMA_SUPPORTED_MEDIA_TYPES = [
   'image/webp',
 ];
 
-const DEFAULT_MODEL: Model = 'claude-v3.5-v2-sonnet';
+const DEFAULT_MODEL: Model = 'claude-v3.7-sonnet';
 
 const useModelState = create<{
   modelId: Model;
@@ -72,21 +68,13 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
   const processedActiveModels = useMemo(() => {
     // Early return if activeModels is provided and not empty
     if (activeModels && Object.keys(activeModels).length > 0) {
-      // Filter to only include models available in Sydney region
-      const sydneyActiveModels = { ...activeModels };
-      Object.keys(sydneyActiveModels).forEach(key => {
-        const modelId = key.replace(/([A-Z])/g, '-$1').toLowerCase();
-        if (!SYDNEY_REGION_MODELS.includes(modelId)) {
-          sydneyActiveModels[key as keyof ActiveModels] = false;
-        }
-      });
-      return sydneyActiveModels;
+      return activeModels;
     }
 
-    // Create a new object with only Sydney region models set to true
+    // Create a new object with all models set to true
     return AVAILABLE_MODEL_KEYS.reduce((acc: ActiveModels, model: Model) => {
-      // Set model to true only if it's available in Sydney region
-      acc[toCamelCase(model) as keyof ActiveModels] = SYDNEY_REGION_MODELS.includes(model);
+      // Optimize string replacement by doing it in one operation
+      acc[toCamelCase(model) as keyof ActiveModels] = true;
       return acc;
     }, {} as ActiveModels);
   }, [activeModels]);
@@ -104,99 +92,7 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
       description?: string;
     }[]
   >(() => {
-    // Get all models but filter to only include those available in Sydney region
-    const allModels = [
-      {
-        modelId: 'claude-v4-opus',
-        label: t('model.claude-v4-opus.label'),
-        description: t('model.claude-v4-opus.description'),
-        supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
-        supportReasoning: true,
-      },
-      {
-        modelId: 'claude-v4-sonnet',
-        label: t('model.claude-v4-sonnet.label'),
-        description: t('model.claude-v4-sonnet.description'),
-        supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
-        supportReasoning: true,
-      },
-      {
-        modelId: 'claude-v3-haiku',
-        label: t('model.claude-v3-haiku.label'),
-        description: t('model.claude-v3-haiku.description'),
-        supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
-        supportReasoning: false,
-      },
-      {
-        modelId: 'claude-v3.5-haiku',
-        label: t('model.claude-v3.5-haiku.label'),
-        description: t('model.claude-v3.5-haiku.description'),
-        supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
-        supportReasoning: false,
-      },
-      {
-        modelId: 'claude-v3.5-sonnet',
-        label: t('model.claude-v3.5-sonnet.label'),
-        description: t('model.claude-v3.5-sonnet.description'),
-        supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
-        supportReasoning: false,
-      },
-      {
-        modelId: 'claude-v3.5-sonnet-v2',
-        label: t('model.claude-v3.5-sonnet-v2.label'),
-        description: t('model.claude-v3.5-sonnet-v2.description'),
-        supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
-        supportReasoning: false,
-      },
-      {
-        modelId: 'claude-v3.7-sonnet',
-        label: t('model.claude-v3.7-sonnet.label'),
-        description: t('model.claude-v3.7-sonnet.description'),
-        supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
-        supportReasoning: true,
-      },
-      {
-        modelId: 'claude-v3-opus',
-        label: t('model.claude-v3-opus.label'),
-        description: t('model.claude-v3-opus.description'),
-        supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
-        supportReasoning: false,
-      },
-      // New Amazon Nova models
-      {
-        modelId: 'amazon-nova-pro',
-        label: t('model.amazon-nova-pro.label'),
-        description: t('model.amazon-nova-pro.description'),
-        supportMediaType: NOVA_SUPPORTED_MEDIA_TYPES,
-        supportReasoning: false,
-      },
-      {
-        modelId: 'amazon-nova-lite',
-        label: t('model.amazon-nova-lite.label'),
-        description: t('model.amazon-nova-lite.description'),
-        supportMediaType: NOVA_SUPPORTED_MEDIA_TYPES,
-        supportReasoning: false,
-      },
-      {
-        modelId: 'amazon-nova-micro',
-        label: t('model.amazon-nova-micro.label'),
-        description: t('model.amazon-nova-micro.description'),
-        supportMediaType: [],
-        supportReasoning: false,
-      },
-      // DeepSeek models
-      {
-        modelId: 'deepseek-r1',
-        label: t('model.deepseek-r1.label'),
-        description: t('model.deepseek-r1.description'),
-        supportMediaType: [],
-        supportReasoning: true,
-        forceReasoningEnabled: true, // Deep Seek always return reasoning contents.
-      },
-      // Meta Llama 3 models
-      {
-        modelId: 'llama3-3-70b-instruct',
-        label: t('model.llama3-3-70b-instruct.label'),
+    return [
       {
         modelId: 'claude-v4-opus',
         label: t('model.claude-v4-opus.label'),
@@ -282,35 +178,6 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
         supportMediaType: [],
         supportReasoning: false,
       },
-      // Amazon Titan models
-      {
-        modelId: 'amazon-titan-text-express-v1',
-        label: t('model.amazon-titan-text-express-v1.label', 'Amazon Titan Text Express v1'),
-        description: t('model.amazon-titan-text-express-v1.description', 'Amazon Titan Text Express model for general text generation'),
-        supportMediaType: [],
-        supportReasoning: false,
-      },
-      {
-        modelId: 'amazon-titan-text-lite-v1',
-        label: t('model.amazon-titan-text-lite-v1.label', 'Amazon Titan Text Lite v1'),
-        description: t('model.amazon-titan-text-lite-v1.description', 'Amazon Titan Text Lite model for efficient text generation'),
-        supportMediaType: [],
-        supportReasoning: false,
-      },
-      {
-        modelId: 'amazon-titan-embed-text-v1',
-        label: t('model.amazon-titan-embed-text-v1.label', 'Amazon Titan Embed Text v1'),
-        description: t('model.amazon-titan-embed-text-v1.description', 'Amazon Titan Embed Text model for text embeddings'),
-        supportMediaType: [],
-        supportReasoning: false,
-      },
-      {
-        modelId: 'amazon-titan-embed-image-v1',
-        label: t('model.amazon-titan-embed-image-v1.label', 'Amazon Titan Embed Image v1'),
-        description: t('model.amazon-titan-embed-image-v1.description', 'Amazon Titan Embed Image model for image embeddings'),
-        supportMediaType: [],
-        supportReasoning: false,
-      },
       // DeepSeek models
       {
         modelId: 'deepseek-r1',
@@ -385,10 +252,7 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
         supportMediaType: [],
         supportReasoning: false,
       },
-    ];
-    
-    // Filter to only include models available in Sydney region
-    return allModels.filter(model => SYDNEY_REGION_MODELS.includes(model.modelId));
+    ].filter(model => SYDNEY_REGION_MODELS.includes(model.modelId));
   }, [t]);
 
   const [filteredModels, setFilteredModels] = useState(availableModels);

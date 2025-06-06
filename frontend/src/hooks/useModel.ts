@@ -56,7 +56,7 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
   // Define which models are available in Sydney region
   const isSydneyModel = useCallback((model: Model): boolean => {
     const sydneyModels: Model[] = [
-      'claude-v3-sonnet',
+      // Only include models that are part of the AVAILABLE_MODEL_KEYS
       'claude-v3-haiku',
       'claude-v3.5-sonnet',
       'claude-v3.5-sonnet-v2',
@@ -147,13 +147,6 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
         modelId: 'claude-v3-opus',
         label: t('model.claude-v3-opus.label'),
         description: t('model.claude-v3-opus.description'),
-        supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
-        supportReasoning: false,
-      },
-      {
-        modelId: 'claude-v3-sonnet',
-        label: t('model.claude-v3-sonnet.label'),
-        description: t('model.claude-v3-sonnet.description'),
         supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
         supportReasoning: false,
       },

@@ -52,21 +52,8 @@ const usePreviousBotId = (botId: string | null | undefined) => {
 
   return ref.current;
 };
-const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
-  // Define which models are available in Sydney region
-  const isSydneyModel = useCallback((model: Model): boolean => {
-    const sydneyModels: Model[] = [
-      // Only include models that are part of the AVAILABLE_MODEL_KEYS
-      'claude-v3-haiku',
-      'claude-v3.5-sonnet',
-      'claude-v3.5-sonnet-v2',
-      'claude-v3.7-sonnet',
-      'mistral-large',
-      'mistral-large-2',
-    ];
-    return sydneyModels.includes(model);
-  }, []);
 
+const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
   const processedActiveModels = useMemo(() => {
     // Early return if activeModels is provided and not empty
     if (activeModels && Object.keys(activeModels).length > 0) {
@@ -75,14 +62,15 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
 
     // Create a new object with all models set to true
     return AVAILABLE_MODEL_KEYS.reduce((acc: ActiveModels, model: Model) => {
-      // Only set Sydney region models to true
-      acc[toCamelCase(model) as keyof ActiveModels] = isSydneyModel(model);
+      // Optimize string replacement by doing it in one operation
+      acc[toCamelCase(model) as keyof ActiveModels] = true;
       return acc;
     }, {} as ActiveModels);
-  }, [activeModels, isSydneyModel]);
+  }, [activeModels]);
 
   const { t } = useTranslation();
   const previousBotId = usePreviousBotId(botId);
+
   const availableModels = useMemo<
     {
       modelId: Model;
@@ -249,17 +237,16 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
     ];
   }, [t]);
 
-  // Filter models at the component level instead of changing the base array
-  const sydneyModels = useMemo(() => {
-    return availableModels.filter(model => isSydneyModel(model.modelId));
-  }, [availableModels, isSydneyModel]);
+  // Sydney region filter - only applied to the returned value, not to the internal state
+  const sydneyRegionModels = ['claude-v3-haiku', 'claude-v3.5-sonnet', 'claude-v3.5-sonnet-v2', 'claude-v3.7-sonnet', 'mistral-large', 'mistral-large-2'];
 
-  const [filteredModels, setFilteredModels] = useState(sydneyModels);
+  const [filteredModels, setFilteredModels] = useState(availableModels);
   const { modelId, setModelId } = useModelState();
   const [recentUseModelId, setRecentUseModelId] = useLocalStorage(
     'recentUseModelId',
     DEFAULT_MODEL
   );
+
   // Save the model id by each bot
   const [botModelId, setBotModelId] = useLocalStorage(
     botId ? `bot_model_${botId}` : 'temp_model',
@@ -269,13 +256,13 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
   // Update filtered models when activeModels changes
   useEffect(() => {
     if (processedActiveModels) {
-      const filtered = sydneyModels.filter((model) => {
+      const filtered = availableModels.filter((model) => {
         const key = toCamelCase(model.modelId) as keyof ActiveModels;
         return processedActiveModels[key] !== false;
       });
       setFilteredModels(filtered);
     }
-  }, [processedActiveModels, sydneyModels]);
+  }, [processedActiveModels, availableModels]);
 
   const getDefaultModel = useCallback(() => {
     // check default model is available
@@ -299,6 +286,7 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
     },
     [filteredModels, getDefaultModel]
   );
+
   useEffect(() => {
     if (processedActiveModels === undefined) {
       return;
@@ -351,11 +339,17 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [botId]);
+
   const model = useMemo(() => {
     return filteredModels.find(
       (model) => toCamelCase(model.modelId) === toCamelCase(modelId)
     );
   }, [filteredModels, modelId]);
+
+  // Filter the models only at the return point
+  const sydneyFilteredModels = filteredModels.filter(model => 
+    sydneyRegionModels.includes(model.modelId)
+  );
 
   return {
     modelId,
@@ -373,7 +367,8 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
         const ext = mediaType.split('/')[1];
         return ext === 'jpeg' ? ['.jpg', '.jpeg'] : [`.${ext}`];
       }) ?? [],
-    availableModels: filteredModels,
+    // Only return Sydney region models
+    availableModels: sydneyFilteredModels,
     forceReasoningEnabled: model?.forceReasoningEnabled ?? false,
   };
 };

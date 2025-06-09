@@ -155,9 +155,13 @@ const BotKbEditPage: React.FC = () => {
   });
 
   const [activeModels, setActiveModels] = useState<ActiveModels>(() => {
+    // Sydney region filter - only initialize models available in Sydney region
+    const sydneyRegionModels = ['claude-v3.5-sonnet-v2'];
+    
     const initialState = AVAILABLE_MODEL_KEYS.reduce(
       (acc: ActiveModels, key: Model) => {
-        acc[toCamelCase(key) as keyof ActiveModels] = true;
+        // Only set to true if the model is in Sydney region, otherwise false
+        acc[toCamelCase(key) as keyof ActiveModels] = sydneyRegionModels.includes(key);
         return acc;
       },
       {} as ActiveModels
@@ -170,12 +174,17 @@ const BotKbEditPage: React.FC = () => {
     label: string;
     description: string;
   }[] = (() => {
+    // Sydney region filter - only show models available in Sydney region
+    const sydneyRegionModels = ['claude-v3.7-sonnet', 'claude-v3.5-sonnet-v2'];
+    
     const getGeneralModels = () => {
-      return AVAILABLE_MODEL_KEYS.map((key) => ({
-        key: key as Model,
-        label: t(`model.${key}.label`) as string,
-        description: t(`model.${key}.description`) as string,
-      }));
+      return AVAILABLE_MODEL_KEYS
+        .filter((key) => sydneyRegionModels.includes(key))
+        .map((key) => ({
+          key: key as Model,
+          label: t(`model.${key}.label`) as string,
+          description: t(`model.${key}.description`) as string,
+        }));
     };
 
     return getGeneralModels();

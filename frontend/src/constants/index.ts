@@ -107,5 +107,5 @@ export const AVAILABLE_MODEL_KEYS = [
 
 // Sydney region available models - used to filter UI options
 export const SYDNEY_REGION_MODELS = [
-  'claude-v3.5-sonnet-v2',
+  'claude-v3.5-sonnet-v2', 'claude-v3-haiku', 'mistral-7b-instruct', 'mixtral-8x7b-instruct', 'mistral-large'
 ] as const;

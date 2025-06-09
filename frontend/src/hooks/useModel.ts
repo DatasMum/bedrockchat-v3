@@ -28,7 +28,7 @@ const LLAMA_SUPPORTED_MEDIA_TYPES = [
   'image/webp',
 ];
 
-const DEFAULT_MODEL: Model = 'claude-v3.7-sonnet';
+const DEFAULT_MODEL: Model = 'claude-v3.5-sonnet-v2';
 
 const useModelState = create<{
   modelId: Model;
@@ -238,7 +238,7 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
   }, [t]);
 
   // Sydney region filter - only applied to the returned value, not to the internal state
-  const sydneyRegionModels = ['claude-v3-haiku', 'claude-v3.5-sonnet', 'claude-v3.5-sonnet-v2', 'claude-v3.7-sonnet', 'mistral-large', 'mistral-large-2'];
+  const sydneyRegionModels = ['claude-v3.5-sonnet-v2'];
 
   const [filteredModels, setFilteredModels] = useState(availableModels);
   const { modelId, setModelId } = useModelState();

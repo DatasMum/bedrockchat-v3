@@ -237,6 +237,112 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
     ];
   }, [t]);
 
+  const [filteredModels, setFilteredModels] = useState(availableModels);
+  const { modelId, setModelId } = useModelState();
+  const [recentUseModelId, setRecentUseModelId] = useLocalStorage(
+    'recentUseModelId',
+    DEFAULT_MODEL
+  );
+
+  // Save the model id by each bot
+  const [botModelId, setBotModelId] = useLocalStorage(
+    botId ? `bot_model_${botId}` : 'temp_model',
+    ''
+  );
+
+  // Update filtered models when activeModels changes
+  useEffect(() => {
+    if (processedActiveModels) {
+      const filtered = availableModels.filter((model) => {
+        const key = toCamelCase(model.modelId) as keyof ActiveModels;
+        return processedActiveModels[key] !== false;
+      });
+      setFilteredModels(filtered);
+    }
+  }, [processedActiveModels, availableModels]);
+
+  const getDefaultModel = useCallback(() => {
+    // check default model is available
+    const defaultModelAvailable = filteredModels.some(
+      (m) => m.modelId === DEFAULT_MODEL
+    );
+    if (defaultModelAvailable) {
+      return DEFAULT_MODEL;
+    }
+    // If the default model is not available, select the first model on the list
+    return filteredModels[0]?.modelId ?? DEFAULT_MODEL;
+  }, [filteredModels]);
+
+  // select the model via list of activeModels
+  const selectModel = useCallback(
+    (targetModelId: Model) => {
+      const modelExists = filteredModels.some(
+        (m) => toCamelCase(m.modelId) === toCamelCase(targetModelId)
+      );
+      return modelExists ? targetModelId : getDefaultModel();
+    },
+    [filteredModels, getDefaultModel]
+  );
+
+  useEffect(() => {
+    if (processedActiveModels === undefined) {
+      return;
+    }
+
+    // botId is changed
+    if (previousBotId !== botId) {
+      // BotId is undefined, select recent modelId
+      if (!botId) {
+        setModelId(selectModel(recentUseModelId as Model));
+        return;
+      }
+
+      // get botModelId from localStorage
+      // When acquired from botModelID, settings for previousBotID are acquired, so a key is specified and acquired directly from local storage.
+      const botModelId = localStorage.getItem(`bot_model_${botId}`);
+
+      // modelId is in the the LocalStorage. use the saved modelId.
+      if (botModelId) {
+        setModelId(selectModel(botModelId as Model));
+      } else {
+        // If there is no bot-specific model ID, check if the last model used can be used
+        const lastModelAvailable = filteredModels.some(
+          (m) => m.modelId === recentUseModelId
+        );
+
+        // If the last model used is available, use it.
+        if (lastModelAvailable) {
+          setModelId(selectModel(recentUseModelId as Model));
+          return;
+        } else {
+          // Use the default model if not available
+          setModelId(selectModel(getDefaultModel()));
+        }
+      }
+    } else {
+      // Processing when botId and previousBotID are the same, but there is an update in FilteredModels
+      if (botId) {
+        const lastModelAvailable = filteredModels.some(
+          (m) =>
+            toCamelCase(m.modelId) === toCamelCase(recentUseModelId) ||
+            toCamelCase(m.modelId) === toCamelCase(botModelId)
+        );
+        if (!lastModelAvailable) {
+          setModelId(selectModel(getDefaultModel()));
+        } else {
+          setModelId(selectModel(recentUseModelId as Model));
+        }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [botId]);
+
+  const model = useMemo(() => {
+    return filteredModels.find(
+      (model) => toCamelCase(model.modelId) === toCamelCase(modelId)
+    );
+  }, [filteredModels, modelId]);
+
   // Filter the models only at the return point
   const sydneyFilteredModels = filteredModels.filter(model => 
     SYDNEY_REGION_MODELS.includes(model.modelId as any)

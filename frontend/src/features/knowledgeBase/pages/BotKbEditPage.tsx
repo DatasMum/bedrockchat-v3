@@ -55,7 +55,7 @@ import {
   GUARDRAILS_CONTECTUAL_GROUNDING_THRESHOLD,
 } from '../../../constants';
 import { Model } from '../../../@types/conversation';
-import { AVAILABLE_MODEL_KEYS } from '../../../constants/index';
+import { AVAILABLE_MODEL_KEYS, SYDNEY_REGION_MODELS } from '../../../constants/index';
 import {
   ChunkingStrategy,
   FixedSizeParams,
@@ -155,13 +155,10 @@ const BotKbEditPage: React.FC = () => {
   });
 
   const [activeModels, setActiveModels] = useState<ActiveModels>(() => {
-    // Sydney region filter - only initialize models available in Sydney region
-    const sydneyRegionModels = ['claude-v3.5-sonnet-v2'];
-    
     const initialState = AVAILABLE_MODEL_KEYS.reduce(
       (acc: ActiveModels, key: Model) => {
         // Only set to true if the model is in Sydney region, otherwise false
-        acc[toCamelCase(key) as keyof ActiveModels] = sydneyRegionModels.includes(key);
+        acc[toCamelCase(key) as keyof ActiveModels] = SYDNEY_REGION_MODELS.includes(key as any);
         return acc;
       },
       {} as ActiveModels
@@ -174,12 +171,9 @@ const BotKbEditPage: React.FC = () => {
     label: string;
     description: string;
   }[] = (() => {
-    // Sydney region filter - only show models available in Sydney region
-    const sydneyRegionModels = ['claude-v3.7-sonnet', 'claude-v3.5-sonnet-v2'];
-    
     const getGeneralModels = () => {
       return AVAILABLE_MODEL_KEYS
-        .filter((key) => sydneyRegionModels.includes(key))
+        .filter((key) => SYDNEY_REGION_MODELS.includes(key as any))
         .map((key) => ({
           key: key as Model,
           label: t(`model.${key}.label`) as string,

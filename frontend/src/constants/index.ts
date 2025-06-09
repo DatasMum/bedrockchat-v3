@@ -104,3 +104,8 @@ export const AVAILABLE_MODEL_KEYS = [
   'llama3-2-11b-instruct',
   'llama3-2-90b-instruct',
 ] as const;
+
+// Sydney region available models - used to filter UI options
+export const SYDNEY_REGION_MODELS = [
+  'claude-v3.5-sonnet-v2',
+] as const;
